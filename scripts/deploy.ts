@@ -26,7 +26,7 @@ async function main() {
 
     // transfer vault manager ownership to forceWithdraw
     const vaultManagerAddress = await lockDealNFTContract.vaultManager()
-    const VaultManager = await ethers.getContractFactory("ForceWithdraw")
+    const VaultManager = await ethers.getContractFactory("VaultManager")
     const vaultManager = VaultManager.attach(vaultManagerAddress) as ForceWithdraw
 
     await vaultManager.transferOwnership(await forceWithdraw.getAddress())
