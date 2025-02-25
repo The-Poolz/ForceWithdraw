@@ -4,10 +4,12 @@ pragma solidity ^0.8.0;
 import "@poolzfinance/poolz-helper-v2/contracts/interfaces/ISimpleProvider.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import "@openzeppelin/contracts/token/ERC721/utils/ERC721Holder.sol";
+import "hardhat/console.sol";
 import "./interfaces/IExtendVaultManager.sol";
 import "./interfaces/IExtendLockDealNFT.sol";
 
-contract ForceWithdraw is Ownable {
+contract ForceWithdraw is Ownable, ERC721Holder {
     using SafeERC20 for IERC20;
 
     IExtendLockDealNFT public immutable lockDealNFT;
@@ -70,7 +72,7 @@ contract ForceWithdraw is Ownable {
     function withdrawNFT(uint256 poolId) public onlyOwner {
         vaultManager.setActiveStatusForVaultId(vaultId, true, true);
         lockDealNFT.safeTransferFrom(address(this), address(lockDealNFT), poolId);
-        vaultManager.setActiveStatusForVaultId(vaultId, false, true);
+        vaultManager.setActiveStatusForVaultId(vaultId, true, false);
     }
 
     //@dev For internal user or debugging
