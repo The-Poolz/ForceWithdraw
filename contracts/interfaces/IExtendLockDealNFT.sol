@@ -8,4 +8,6 @@ interface IExtendLockDealNFT is ILockDealNFT {
     function vaultManager() external view returns (IVaultManager);
 
     function poolIdToVaultId(uint256 poolId) external view returns (uint256);
+
+    function safeTransferFrom(address from, address to, uint256 tokenId) external;
 }
