@@ -3,17 +3,17 @@ pragma solidity ^0.8.0;
 
 import "@poolzfinance/poolz-helper-v2/contracts/interfaces/ISimpleProvider.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./interfaces/IExtendVaultManager.sol";
 import "./interfaces/IExtendLockDealNFT.sol";
 
 contract ForceWithdraw is Ownable {
     IExtendLockDealNFT public immutable lockDealNFT;
-
     IExtendVaultManager public immutable vaultManager;
-
     ISimpleProvider public immutable dealProvider;
-
     uint256 public immutable sourcePoolId;
+    uint256 public immutable vaultId;
+    IERC20 public immutable token;
 
     constructor(
         IExtendLockDealNFT _lockDealNFT,
@@ -24,36 +24,64 @@ contract ForceWithdraw is Ownable {
         vaultManager = IExtendVaultManager(address(lockDealNFT.vaultManager()));
         dealProvider = _dealProvider;
         sourcePoolId = _sourcePoolId;
+        vaultId = lockDealNFT.poolIdToVaultId(_sourcePoolId);
+        token = IERC20(vaultManager.vaultIdToTokenAddress(vaultId));
     }
 
+    //@dev Main function to force withdraw tokens from a pool
     function forceWithdraw(
         address receiver,
         uint256 amount
     ) external onlyOwner {
+        _Validate(receiver);
+        uint256 newPoolId = CreatePool(amount);
+        WithdrawNFT(newPoolId);
+        TransferTokens(receiver, amount);
+        Finlize();
+    }
+
+    function _Validate(address receiver) internal view {
         if (vaultManager.owner() != address(this)) revert InvalidOwner();
         if (!lockDealNFT.approvedContracts(address(this)))
             revert NotApprovedContract();
         if (receiver == address(0)) revert ZeroAddress();
+    }
 
-        uint256 vaultId = lockDealNFT.poolIdToVaultId(sourcePoolId);
-        // activate the vault
-        vaultManager.setActiveStatusForVaultId(vaultId, true, true);
+    //@dev For internal user or debugging
+    function CreatePool(
+        uint256 amount
+    ) public onlyOwner returns (uint256 newPoolId) {
         // mint DealProvider
-        uint256 poolId = lockDealNFT.mintForProvider(receiver, dealProvider);
+        newPoolId = lockDealNFT.mintForProvider(
+            address(this),
+            dealProvider
+        );
         // clone vaultId
-        lockDealNFT.cloneVaultId(poolId, sourcePoolId);
+        lockDealNFT.cloneVaultId(newPoolId, sourcePoolId);
         // register the new amount without transfer
         uint256[] memory params = new uint256[](1);
         params[0] = amount;
-        dealProvider.registerPool(poolId, params);
-        // return ownership to previous owner
-        vaultManager.transferOwnership(msg.sender);
+        dealProvider.registerPool(newPoolId, params);
     }
 
-    function transferVaultManagerOwnership(
-        address newOwner
-    ) external onlyOwner {
-        vaultManager.transferOwnership(newOwner);
+    //@dev For internal user or debugging
+    function WithdrawNFT(uint256 poolId) public onlyOwner {
+        vaultManager.setActiveStatusForVaultId(vaultId, true, true);
+        lockDealNFT.safeTransferFrom(address(this), address(lockDealNFT), poolId);
+        vaultManager.setActiveStatusForVaultId(vaultId, false, true);
+    }
+
+    //@dev For internal user or debugging
+    function TransferTokens(
+        address receiver,
+        uint256 amount
+    ) public onlyOwner {
+        token.transfer(receiver, amount);
+    }
+
+    function Finlize() public onlyOwner {
+        // return ownership to previous owner
+        vaultManager.transferOwnership(owner());
     }
 
     error InvalidOwner();
