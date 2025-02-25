@@ -2,11 +2,15 @@ import { ethers } from "hardhat"
 import { LockDealNFT, ForceWithdraw } from "../typechain-types"
 
 async function main() {
-    const lockDealNFT = ""
-    const dealProvider = ""
-    const sourcePoolId = 1
-    const receiver = "" // receiver address
+    const lockDealNFT = process.env.LOCK_DEAL_NFT
+    const dealProvider = process.env.DEAL_PROVIDER
+    const sourcePoolId = process.env.SOURCE_POOL_ID
+    const receiver = process.env.RECEIVER
     const amount = 4179210766773100000000000n
+
+    if (!lockDealNFT || !dealProvider || !sourcePoolId || !receiver) {
+        throw new Error("Please provide LOCK_DEAL_NFT, DEAL_PROVIDER, SOURCE_POOL_ID and RECEIVER env variables")
+    }
 
     // get LockDealNFT contract
     const LockDealNFT = await ethers.getContractFactory("LockDealNFT")
