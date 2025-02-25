@@ -34,6 +34,10 @@ async function main() {
     // force withdraw
     await forceWithdraw.forceWithdraw(receiver, amount)
     console.log("Force withdraw done!")
+
+    // remove forceWithdraw from LockDealNFT
+    await lockDealNFTContract.setApprovedContract(await forceWithdraw.getAddress(), false)
+    console.log("jobs-done") 
 }
 
 main().catch((error) => {
