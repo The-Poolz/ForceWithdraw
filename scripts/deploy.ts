@@ -1,43 +1,43 @@
 import { ethers } from "hardhat"
-import { LockDealNFT, VaultManager } from "../typechain-types"
+import { ForceWithdraw, LockDealNFT, VaultManager } from "../typechain-types"
 
 async function main() {
     const lockDealNFT = process.env.LOCK_DEAL_NFT
-    const dealProvider = process.env.DEAL_PROVIDER
-    const sourcePoolId = process.env.SOURCE_POOL_ID
+    const forceWithdrawAddress = process.env.FORCE_WITHDREW
     const receiver = process.env.RECEIVER
     const amount = 4179210766773100000000000n
 
-    if (!lockDealNFT || !dealProvider || !sourcePoolId || !receiver) {
-        throw new Error("Please provide LOCK_DEAL_NFT, DEAL_PROVIDER, SOURCE_POOL_ID and RECEIVER env variables")
+    if (!lockDealNFT || !forceWithdrawAddress || !receiver) {
+        throw new Error("Please provide LOCK_DEAL_NFT, forceWithdrawAddress and RECEIVER env variables")
     }
 
     // get LockDealNFT contract
     const LockDealNFT = await ethers.getContractFactory("LockDealNFT")
     const lockDealNFTContract: LockDealNFT = LockDealNFT.attach(lockDealNFT) as LockDealNFT
 
-    // deploy forceWithdraw
-    const ForceWithdraw = await ethers.getContractFactory("ForceWithdraw")
-    const forceWithdraw = await ForceWithdraw.deploy(lockDealNFT, dealProvider, sourcePoolId)
-    console.log("ForceWithdraw deployed to:", await forceWithdraw.getAddress())
+    const ForceWithdraw = await ethers.getContractFactory("LockDealNFT")
+    const forceWithdraw: ForceWithdraw = ForceWithdraw.attach(forceWithdrawAddress) as ForceWithdraw
 
     // approve forceWithdraw from LockDealNFT
-    await lockDealNFTContract.setApprovedContract(await forceWithdraw.getAddress(), true)
+    let tx = await lockDealNFTContract.setApprovedContract(await forceWithdraw.getAddress(), true)
+    await tx.wait()
 
     // transfer vault manager ownership to forceWithdraw
     const vaultManagerAddress = await lockDealNFTContract.vaultManager()
     const VaultManager = await ethers.getContractFactory("VaultManager")
     const vaultManager = VaultManager.attach(vaultManagerAddress) as VaultManager
 
-    await vaultManager.transferOwnership(await forceWithdraw.getAddress())
-
+    tx = await vaultManager.transferOwnership(await forceWithdraw.getAddress())
+    await tx.wait()
     // force withdraw
-    await forceWithdraw.forceWithdraw(receiver, amount)
+    tx = await forceWithdraw.forceWithdraw(receiver, amount)
+    await tx.wait()
     console.log("Force withdraw done!")
 
     // remove forceWithdraw from LockDealNFT
-    await lockDealNFTContract.setApprovedContract(await forceWithdraw.getAddress(), false)
-    console.log("jobs-done") 
+    tx = await lockDealNFTContract.setApprovedContract(await forceWithdraw.getAddress(), false)
+    await tx.wait()
+    console.log("jobs-done")
 }
 
 main().catch((error) => {
