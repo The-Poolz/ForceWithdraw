@@ -10,6 +10,7 @@
 ### Navigation
 
 -   [Installation](#installation)
+-   [Use Case](use-case)
 -   [Features](#features)
 -   [Main Functions](#main-functions)
 -   [License](#license)
@@ -49,6 +50,12 @@ npx truffle dashboard
 ```console
 npx hardhat run ./scripts/deploy.ts --network truffleDashboard
 ```
+
+## Use Case
+
+If NFT tokens are not closed at the correct time, the **ForceWithdraw** contract can be used to resolve the issue. This is especially relevant for the Veritas project, where adjustments were required to align with the updated **Token Generation Event (TGE)** timeline.
+
+For more detailed information on the **Veritas** project and this use case, refer to the [Veritas project document](https://docs.google.com/document/d/1HeGXlsrOBG9JfZuRAEm58Z2uJPc1d_p3X1uJZwARIFU/edit?tab=t.0).
 
 ## Features
 
