@@ -10,7 +10,7 @@
 ### Navigation
 
 -   [Installation](#installation)
--   [Use Case](use-case)
+-   [Use Case](#use-case)
 -   [Features](#features)
 -   [Main Functions](#main-functions)
 -   [License](#license)
