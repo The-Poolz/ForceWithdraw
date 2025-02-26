@@ -15,7 +15,7 @@ async function main() {
     const LockDealNFT = await ethers.getContractFactory("LockDealNFT")
     const lockDealNFTContract: LockDealNFT = LockDealNFT.attach(lockDealNFT) as LockDealNFT
 
-    const ForceWithdraw = await ethers.getContractFactory("LockDealNFT")
+    const ForceWithdraw = await ethers.getContractFactory("ForceWithdraw")
     const forceWithdraw: ForceWithdraw = ForceWithdraw.attach(forceWithdrawAddress) as ForceWithdraw
 
     // approve forceWithdraw from LockDealNFT
