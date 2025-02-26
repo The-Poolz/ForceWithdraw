@@ -1,5 +1,5 @@
 import { ethers } from "hardhat"
-import { LockDealNFT, ForceWithdraw } from "../typechain-types"
+import { LockDealNFT, VaultManager } from "../typechain-types"
 
 async function main() {
     const lockDealNFT = process.env.LOCK_DEAL_NFT
@@ -27,7 +27,7 @@ async function main() {
     // transfer vault manager ownership to forceWithdraw
     const vaultManagerAddress = await lockDealNFTContract.vaultManager()
     const VaultManager = await ethers.getContractFactory("VaultManager")
-    const vaultManager = VaultManager.attach(vaultManagerAddress) as ForceWithdraw
+    const vaultManager = VaultManager.attach(vaultManagerAddress) as VaultManager
 
     await vaultManager.transferOwnership(await forceWithdraw.getAddress())
 
