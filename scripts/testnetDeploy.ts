@@ -7,8 +7,6 @@ async function main() {
     const dealProviderAddress = ""
     const user = "" // receiver address
     const vaultAmount = 4179210766773100000000000n
-    let sourcePoolId: bigint
-    let vaultId: bigint
 
     // get LockDealNFT contract
     const LockDealNFT = await ethers.getContractFactory("LockDealNFT")
@@ -48,13 +46,13 @@ async function main() {
         )
         await tx.wait()
     }
-    sourcePoolId = (await lockDealNFTContract.totalSupply()) - 1n
+    const sourcePoolId = (await lockDealNFTContract.totalSupply()) - 1n
 
     // deploy forceWithdraw
     const ForceWithdraw = await ethers.getContractFactory("ForceWithdraw")
     const forceWithdraw = await ForceWithdraw.deploy(lockDealNFTAddress, dealProviderAddress, sourcePoolId)
     console.log("ForceWithdraw deployed to:", await forceWithdraw.getAddress())
-    vaultId = (await vaultManager.totalVaults()) - 1n
+    const vaultId = (await vaultManager.totalVaults()) - 1n
 
     // approve forceWithdraw from LockDealNFT
     tx = await lockDealNFTContract.setApprovedContract(await forceWithdraw.getAddress(), true)
